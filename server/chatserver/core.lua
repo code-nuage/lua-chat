@@ -54,9 +54,9 @@ function core.run()
                         break
                     end
                 elseif message then
-                if type(callbacks.on_message) == "function" then
-                    callbacks.on_message(client, message)
-                end
+                    if type(callbacks.on_message) == "function" then
+                        callbacks.on_message(client, message)
+                    end
                 end
             end
         end
