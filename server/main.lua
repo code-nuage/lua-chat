@@ -2,6 +2,7 @@ local chatserver = require("chatserver.init")
 
 chatserver.core.set_config(require("config"))
 
+--+ COMMANDS +--
 chatserver.commands:new("/list", function(body)
     local message = "[\27[94mLIST\27[0m]\n"
     for _, c in ipairs(chatserver.core.get_clients()) do
@@ -23,6 +24,7 @@ chatserver.commands:new("/help", function(body)
     " - \27[94m/list\27[0m: Lists all current users\n")
 end)
 
+--+ CALLBACKS +--
 function chatserver.callbacks.on_message(client, message)
     print(tostring(client.name) .. " (" .. tostring(client) .. ") > " .. message)
 
@@ -35,6 +37,14 @@ end
 function chatserver.callbacks.on_join(client)
     local ip, port = client.client:getpeername()
     print("[\27[92mJOIN\27[0m] " .. tostring(client.name) .. " (" .. ip .. ":" .. port .. ") ")
+
+    local message = "  _                        _           _   \n" ..
+                    " | |_ ___ _ __         ___| |__   __ _| |_ \n" ..
+                    " | __/ __| '_ \\ _____ / __| '_ \\ / _` | __|\n" ..
+                    " | || (__| |_) |_____| (__| | | | (_| | |_ \n" ..
+                    "  \\__\\___| .__/       \\___|_| |_|\\__,_|\\__|\n" ..
+                    "         |_|                               \n"
+    client.client:send(message .. "            Welcome to tcp-chat\nType \27[92m/help\27[0m to see available commands\n")
     chatserver.message.broadcast("[\27[92mJOIN\27[0m] " .. tostring(client.name))
 end
 

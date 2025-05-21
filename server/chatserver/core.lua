@@ -30,10 +30,11 @@ function core.run()
                 if client then
                     client:settimeout(0)
                     table.insert(clients, {client = client})
-                end
-                if type(callbacks.on_join) == "function" then
-                    local c = clients[#clients]
-                    callbacks.on_join(c)
+
+                    if type(callbacks.on_join) == "function" then
+                        local c = clients[#clients]
+                        callbacks.on_join(c)
+                    end
                 end
             else
                 local client
