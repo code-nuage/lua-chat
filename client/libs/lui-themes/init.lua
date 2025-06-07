@@ -1,7 +1,7 @@
 local themes = {}
 themes.__index = themes
 
-function themes:new(theme)
+function themes.new(theme)
     local i = setmetatable({}, themes)
 
     i.colors = {
@@ -28,7 +28,6 @@ function themes:new(theme)
             r, g, b = tonumber(r), tonumber(g), tonumber(b)
         end
 
-        print(r, g, b)
         i.colors[color] = string.format("\27[%d;2;%d;%d;%dm", place, r, g, b)
     end
 
@@ -36,9 +35,13 @@ function themes:new(theme)
 end
 
 function themes:apply(text)
+    text = text .. "{{reset}}"
     return text:gsub("{{(.-)}}", function(key)
+        -- error(key)
         return self.colors[key] or ""
     end)
 end
+
+lui.themes = themes
 
 return themes

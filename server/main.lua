@@ -26,11 +26,12 @@ end)
 
 --+ CALLBACKS +--
 function chatserver.callbacks.on_message(client, message)
-    print(tostring(client.name) .. " (" .. tostring(client) .. ") > " .. message)
+    local ip, port = client.client:getpeername()
+    print(tostring(client.name) .. " (" .. ip .. ":" .. port .. ") > " .. message)
 
     if not chatserver.commands:parse(client, message) then
         local pretty_message = tostring(client.name) .. " > " .. message
-        chatserver.message.broadcast_exclude(pretty_message, client)
+        chatserver.message.broadcast(pretty_message)
     end
 end
 
@@ -38,13 +39,13 @@ function chatserver.callbacks.on_join(client)
     local ip, port = client.client:getpeername()
     print("[\27[92mJOIN\27[0m] " .. tostring(client.name) .. " (" .. ip .. ":" .. port .. ") ")
 
-    local message = "  _                        _           _   \n" ..
+    local title = "  _                        _           _   \n" ..
                     " | |_ ___ _ __         ___| |__   __ _| |_ \n" ..
                     " | __/ __| '_ \\ _____ / __| '_ \\ / _` | __|\n" ..
                     " | || (__| |_) |_____| (__| | | | (_| | |_ \n" ..
                     "  \\__\\___| .__/       \\___|_| |_|\\__,_|\\__|\n" ..
                     "         |_|                               \n"
-    client.client:send(message .. "            Welcome to tcp-chat\nType \27[92m/help\27[0m to see available commands\n")
+    client.client:send(title .. "            Welcome to tcp-chat\nType \27[92m/help\27[0m to see available commands\n")
     chatserver.message.broadcast("[\27[92mJOIN\27[0m] " .. tostring(client.name))
 end
 

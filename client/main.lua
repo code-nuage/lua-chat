@@ -1,23 +1,72 @@
-require("libs.lui.init")
+require("lui")
+require("libs.lui-boxes.init")
+require("libs.lui-keys.init")
+require("libs.lui-themes.init")
 
-lui.themes = require("libs.lui-themes.themes")
-lui.boxes = require("libs.lui-boxes.init")
+local socket = require("socket")
+local config = require("config")
 
-local theme = lui.themes:new(require("theme"))
+local client = assert(socket.tcp())
+client:connect(config.ip, config.port)
+client:settimeout(0)
 
-local frames = lui.boxes.frames:new()
-frames:add(5, 4, 10, 6)
+local manager = lui.boxes.manager.new()
+local frame_chat = lui.boxes.frame.new(1, 2, lui.graphics.get_width(), lui.graphics.get_height() - 4)
+local frame_input = lui.boxes.frame.new(1, lui.graphics.get_height() - 2, lui.graphics.get_width(), 3)
+
+local text_input = lui.boxes.text_input.new(1, 1, lui.graphics.get_width() - 2)
+
+local line_y = 1
+
+local function add_chat_line(msg)
+    local label = lui.boxes.label.new(msg, 1, line_y)
+    frame_chat:add_component(label)
+    line_y = line_y + 1
+end
+
+local function receive_loop()
+    local s, status, partial = client:receive()
+    if s then
+        add_chat_line(s)
+    elseif partial and #partial > 0 then
+        add_chat_line(s)
+    end
+    socket.sleep(0.001)
+end
+
+local recv_thread = coroutine.create(function()
+    while true do
+        receive_loop()
+        coroutine.yield() -- Rend la main à lui.update()
+    end
+end)
+
+function text_input:enter()
+    local message = self:get_value()
+    if message ~= "" then
+        client:send(message .. "\n")
+    end
+    self:set_value("")
+end
+
+frame_input:add_component(text_input)
+manager:add_frame(frame_chat):add_frame(frame_input)
+
+lui.graphics.clear()
 
 function lui.update()
-    if lui.keyboard.is_key_down("q") then
+    coroutine.resume(recv_thread)
+    manager:update()
+    if lui.keyboard.is_down(lui.keys["ESCAPE"]) then
         lui.exit()
     end
 end
 
 function lui.draw()
-    lui.graphics.draw(theme:apply("{{positive}}Positive{{reset}}"), 2, 2)
-    lui.graphics.draw(theme:apply("{{negative}}Negative{{reset}}"), 2, 3)
-    frames:draw()
+    manager:draw()
+    local text = "lua-chat"
+    local tx, ty = lui.graphics.get_width() / 2 - #text / 2, 1
+    lui.graphics.draw(text, tx, ty)
 end
 
 lui.run()
